@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: laravel-app
+    container_name: laravel-app
+    working_dir: /var/www
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+      - ./storage:/var/www/storage
+    ports:
+    - "9000:9000"
+    # environment:
+    #   - DB_CONNECTION=mysql
+    #   - DB_HOST=db
+    #   - DB_PORT=3306
+    #   - DB_DATABASE=challenge_full_stack
+    #   - DB_USERNAME=root
+    #   - DB_PASSWORD=root
+    depends_on:
+      - db
+    networks:
+      - laravel
+  php:
+    build:
+      context: .
+      dockerfile: .docker/php/Dockerfile
+    container_name: php
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel
+  web:
+    image: nginx:latest
+    container_name: laravel-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www
+      - ./.docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - php
+    networks:
+      - laravel
+
+  db:
+    image: mysql:8
+    container_name: laravel-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: challenge_full_stack
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3307:3306"
+    networks:
+      - laravel
+    volumes:
+    - mysql_data:/var/lib/mysql  # Volumen persistente
+
+networks:
+  laravel:
+    driver: bridge
+
+volumes:
+  mysql_data:  # Declaramos el volumen
