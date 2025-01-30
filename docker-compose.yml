@@ -41,7 +41,7 @@ services:
       - "80:80"
     volumes:
       - .:/var/www
-      - ./dist:/var/www/vue
+      - ./dist:/usr/share/nginx/html # Nuevo path de Vue
       - ./.docker/nginx:/etc/nginx/conf.d
     depends_on:
       - php
